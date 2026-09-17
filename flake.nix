@@ -12,6 +12,10 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       args@{ ... }:
       {
+        imports = [
+          (import ./lib/identity.nix args)
+        ];
+
         flake = {
           flakeModule = import ./lib/flakeModule.nix args;
           aspects = {

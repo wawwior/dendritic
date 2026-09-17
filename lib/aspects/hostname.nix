@@ -3,7 +3,7 @@ let
   inherit (builtins) head;
 in
 {
-  # i dont know why this fails without wrapping it like this
+  # FIXME: i do know now why this fails without wrapping it like this, will fix
   includes = [
     ({ class, aspect-chain }: {
       nixos = {

@@ -1,4 +1,4 @@
-{
+args@{
   inputs,
   ...
 }:
@@ -9,8 +9,6 @@
 }:
 let
 
-  flake-ref = self.outPath;
-
   aspects-lib = inputs.flake-aspects.lib lib;
 
   inherit (builtins) head mapAttrs;
@@ -19,7 +17,7 @@ let
   inherit (lib.types) attrsOf listOf submodule;
 
   inherit (aspects-lib) forward resolve;
-  inherit (aspects-lib.types) aspectSubmodule aspectsType;
+  inherit (aspects-lib.types) aspectSubmodule;
 
   forward-include =
     from:
@@ -34,29 +32,11 @@ let
 in
 {
 
+  imports = [
+    (import ./identity.nix args)
+  ];
+
   options = {
-    flake.aspects = mkOption {
-      type = (
-        aspectsType {
-          defaultFunctor =
-            self:
-            { class, aspect-chain }:
-            self
-            // {
-              identity =
-                let
-                  flake = flake-ref;
-                  name = self.name;
-                  description = self.description;
-                in
-                {
-                  inherit flake name description;
-                  hash = builtins.hashString "sha512" (builtins.toJSON { inherit flake name description; });
-                };
-            };
-        }
-      );
-    };
     flake.hosts = mkOption {
       type = attrsOf (submodule {
         options = {
