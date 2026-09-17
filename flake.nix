@@ -12,10 +12,6 @@
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       outputs@{ ... }:
       {
-        imports = [
-          inputs.flake-aspects.flakeModule
-        ];
-
         flake = {
           flakeModule = import ./lib/flakeModule.nix outputs;
           aspects = {

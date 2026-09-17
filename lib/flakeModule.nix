@@ -30,6 +30,11 @@ let
     };
 in
 {
+
+  imports = [
+    inputs.flake-aspects.flakeModule
+  ];
+
   options.flake.hosts = mkOption {
     type = attrsOf (submodule {
       options = {
