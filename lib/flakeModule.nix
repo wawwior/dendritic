@@ -8,6 +8,9 @@
   ...
 }:
 let
+
+  flake-ref = self.outPath;
+
   aspects-lib = inputs.flake-aspects.lib lib;
 
   inherit (builtins) head mapAttrs;
@@ -16,7 +19,7 @@ let
   inherit (lib.types) attrsOf listOf submodule;
 
   inherit (aspects-lib) forward resolve;
-  inherit (aspects-lib.types) aspectSubmodule;
+  inherit (aspects-lib.types) aspectSubmodule aspectsType;
 
   forward-include =
     from:
@@ -31,24 +34,44 @@ let
 in
 {
 
-  imports = [
-    inputs.flake-aspects.flakeModule
-  ];
-
-  options.flake.hosts = mkOption {
-    type = attrsOf (submodule {
-      options = {
-        aspects = mkOption {
-          type = listOf (aspectSubmodule { });
-          default = [ ];
+  options = {
+    flake.aspects = mkOption {
+      type = (
+        aspectsType {
+          defaultFunctor =
+            self:
+            { class, aspect-chain }:
+            self
+            // {
+              identity =
+                let
+                  flake = flake-ref;
+                  name = self.name;
+                  description = self.description;
+                in
+                {
+                  inherit flake name description;
+                  hash = builtins.hashString "sha512" (builtins.toJSON { inherit flake name description; });
+                };
+            };
+        }
+      );
+    };
+    flake.hosts = mkOption {
+      type = attrsOf (submodule {
+        options = {
+          aspects = mkOption {
+            type = listOf (aspectSubmodule { });
+            default = [ ];
+          };
+          users = mkOption {
+            type = listOf (aspectSubmodule { });
+            default = [ ];
+          };
         };
-        users = mkOption {
-          type = listOf (aspectSubmodule { });
-          default = [ ];
-        };
-      };
-    });
-    default = { };
+      });
+      default = { };
+    };
   };
 
   config.flake.nixosConfigurations = mapAttrs (

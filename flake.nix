@@ -10,13 +10,16 @@
   outputs =
     inputs@{ ... }:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      outputs@{ ... }:
+      args@{ ... }:
       {
         flake = {
-          flakeModule = import ./lib/flakeModule.nix outputs;
+          flakeModule = import ./lib/flakeModule.nix args;
           aspects = {
-            forward-home = import ./lib/aspects/forward-home.nix outputs;
-            hostname = import ./lib/aspects/hostname.nix outputs;
+            forward-home = import ./lib/aspects/forward-home.nix args;
+            hostname = import ./lib/aspects/hostname.nix args;
+          };
+          lib = {
+            identityOf = import ./lib/identityOf.nix args;
           };
         };
 
