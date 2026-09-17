@@ -16,6 +16,7 @@
           flakeModule = import ./lib/flakeModule.nix outputs;
           aspects = {
             forward-home = import ./lib/aspects/forward-home.nix outputs;
+            hostname = import ./lib/aspects/hostname.nix outputs;
           };
         };
 

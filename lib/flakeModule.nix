@@ -56,6 +56,7 @@ in
     lib.nixosSystem {
       modules = [
         (resolve "nixos" [ ] {
+          inherit name;
           includes = host.aspects ++ [ (forward-include "__aspects") ];
         })
         (resolve "nixos" [ ] {
