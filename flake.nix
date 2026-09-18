@@ -3,30 +3,9 @@
 
   inputs = {
     flake-aspects.url = "github:denful/flake-aspects";
-
     flake-parts.url = "github:hercules-ci/flake-parts";
+    import-tree.url = "github:denful/import-tree";
   };
 
-  outputs =
-    inputs@{ ... }:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      args@{ ... }:
-      {
-        imports = [
-          (import ./lib/identity.nix args)
-        ];
-
-        flake = {
-          flakeModule = import ./lib/flakeModule.nix args;
-          aspects = {
-            forward-home = import ./lib/aspects/forward-home.nix args;
-            hostname = import ./lib/aspects/hostname.nix args;
-          };
-          lib = {
-            identityOf = import ./lib/identityOf.nix args;
-          };
-        };
-
-      }
-    );
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }
