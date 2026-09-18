@@ -6,12 +6,11 @@
 let
 
   inherit (lib) mkOption;
-  inherit (lib.types) attrsOf listOf submodule;
 
   inherit (self.aspects) forward-include;
 
   inherit (self.lib.aspects) forward resolve;
-  inherit (self.lib.aspects.types) providerType;
+  inherit (self.lib.types) hostsType;
 in
 {
 
@@ -19,18 +18,7 @@ in
 
     options = {
       flake.hosts = mkOption {
-        type = attrsOf (submodule {
-          options = {
-            aspects = mkOption {
-              type = listOf (providerType { });
-              default = [ ];
-            };
-            users = mkOption {
-              type = listOf (providerType { });
-              default = [ ];
-            };
-          };
-        });
+        type = hostsType { };
         default = { };
       };
     };
@@ -41,7 +29,9 @@ in
         modules = [
           (resolve "nixos" [ ] {
             inherit name;
-            includes = host.aspects ++ [ (forward-include "__aspects") ];
+            includes = host.aspects ++ [
+              (forward-include "__aspects")
+            ];
           })
           (resolve "nixos" [ ] {
             includes = host.users ++ [

@@ -33,8 +33,8 @@ in
       attr.aspects.finish =
         aspects:
         builtins.mapAttrs (
-          name: aspect:
-          inject aspect (mint {
+          name:
+          inject (mint {
             flake = self;
             path = [
               "aspects"
