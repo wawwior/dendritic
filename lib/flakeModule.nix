@@ -17,7 +17,7 @@ let
   inherit (lib.types) attrsOf listOf submodule;
 
   inherit (aspects-lib) forward resolve;
-  inherit (aspects-lib.types) aspectSubmodule;
+  inherit (aspects-lib.types) providerType;
 
   forward-include =
     from:
@@ -41,11 +41,11 @@ in
       type = attrsOf (submodule {
         options = {
           aspects = mkOption {
-            type = listOf (aspectSubmodule { });
+            type = listOf (providerType { });
             default = [ ];
           };
           users = mkOption {
-            type = listOf (aspectSubmodule { });
+            type = listOf (providerType { });
             default = [ ];
           };
         };
