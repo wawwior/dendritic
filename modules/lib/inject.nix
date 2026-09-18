@@ -7,11 +7,23 @@ let
       g (
         f
         // {
-          __functor = self: args: g (f.__functor self args);
+          __functor = injectFunctor f.__functor g;
         }
       )
     else
-      (g f);
+      g f;
+
+  injectFunctor =
+    f: g:
+    if builtins.isFunction f then
+      (x: inject (f x) g)
+    else if f ? __functor then
+      f
+      // {
+        __functor = injectFunctor f.__functor g;
+      }
+    else
+      f;
 in
 {
   flake.lib.inject = inject;
