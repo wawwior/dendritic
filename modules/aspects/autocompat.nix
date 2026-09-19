@@ -7,22 +7,11 @@
 
       identities = self.lib.collectAspects "identity" (builtins.head aspect-chain);
 
-      compats =
-        map
-          (
-            compat:
-            compat
-            // {
-              target = compat.target.identity;
-            }
-          )
-          (
-            builtins.concatMap (compat: compat.provides) (
-              self.lib.collectAspects "compat" (builtins.head (aspect-chain ++ [ { } ]))
-            )
-          );
+      compats = builtins.concatMap (compat: compat.provides) (
+        self.lib.collectAspects "compat" (builtins.head (aspect-chain ++ [ { } ]))
+      );
 
-      needed = builtins.filter (compat: builtins.elem compat.target identities) compats;
+      needed = builtins.filter (compat: builtins.elem compat.target.identity identities) compats;
 
     in
     {
