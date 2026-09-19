@@ -1,4 +1,4 @@
-{ self, lib, ... }:
+{ self, ... }:
 {
   flake.aspects.forward-home = {
     includes = [
@@ -12,7 +12,7 @@
       (
         { class, aspect-chain }:
         self.lib.aspects.forward {
-          each = [ (lib.last (lib.dropEnd 1 aspect-chain)) ];
+          each = [ (builtins.head aspect-chain) ];
           fromClass = _: "home";
           intoClass = _: "__users";
           intoPath = user: [

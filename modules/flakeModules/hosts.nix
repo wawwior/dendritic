@@ -33,23 +33,29 @@ in
               (forward-include "__aspects")
             ];
           })
-          (resolve "nixos" [ ] {
-            includes = host.users ++ [
+        ]
+        ++ (map (
+          user:
+          resolve "nixos" [ ] {
+            name = user.name;
+            includes = [
+              user
               (forward-include "__users")
               (forward {
-                each = host.users;
+                each = [ { } ];
                 fromClass = _: "user";
                 intoClass = _: "nixos";
-                intoPath = user: [
+                intoPath = _: [
                   "users"
                   "users"
                   user.name
                 ];
-                fromAspect = user: user;
+                fromAspect = _: user;
               })
-            ];
-          })
-        ];
+            ]
+            ++ [ ];
+          }
+        ) host.users);
       }
     ) self.hosts;
   };
