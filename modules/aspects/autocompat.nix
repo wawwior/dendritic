@@ -3,32 +3,30 @@
     { class, aspect-chain }:
     let
 
-      identities = self.lib.collectAspects "identity" (builtins.head aspect-chain);
+      aspects = self.lib.collect (builtins.head aspect-chain);
 
-      aspects = self.lib.collectAspects "compat" (builtins.head aspect-chain);
+      identities = map self.lib.identity aspects;
 
-      compats =
-        (lib.evalModules {
-          modules = aspects ++ [
-            {
-              options.provides = lib.mkOption {
-                type = lib.types.listOf (
-                  lib.types.submodule {
-                    options = {
-                      target = lib.mkOption {
-                        type = lib.types.raw;
-                      };
-                      aspect = lib.mkOption {
-                        type = lib.types.raw;
-                      };
-                    };
-                  }
-                );
-                default = [ ];
+      extract-compat = self.lib.extract {
+        class = "compat";
+        options.provides = lib.mkOption {
+          type = lib.types.listOf (
+            lib.types.submodule {
+              options = {
+                target = lib.mkOption {
+                  type = lib.types.raw;
+                };
+                aspect = lib.mkOption {
+                  type = lib.types.raw;
+                };
               };
             }
-          ];
-        }).config.provides;
+          );
+          default = [ ];
+        };
+      };
+
+      compats = lib.concatMap (compat: compat.provides) (map extract-compat aspects);
 
       needed = builtins.filter (compat: builtins.elem compat.target.identity identities) compats;
 

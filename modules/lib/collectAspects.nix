@@ -17,12 +17,20 @@ let
     else
       aspect;
 
-  collectAspects =
-    class: aspect:
-    lib.flatten (
-      [ (bind aspect).${class} or [ ] ] ++ (map (collectAspects class) ((bind aspect).includes or [ ]))
-    );
+  extract =
+    { class, options }:
+    aspect:
+    (lib.evalModules {
+      modules = [
+        (bind aspect).${class}
+        { inherit options; }
+      ];
+    }).config;
+
+  collect = aspect: lib.flatten ([ aspect ] ++ (map collect ((bind aspect).includes or [ ])));
 in
 {
-  flake.lib.collectAspects = collectAspects;
+  flake.lib = {
+    inherit bind extract collect;
+  };
 }
