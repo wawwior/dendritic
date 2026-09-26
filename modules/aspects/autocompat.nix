@@ -1,34 +1,38 @@
-{ self, lib, ... }: {
+{ self, lib, ... }:
+let
+  inherit (lib) mkOption;
+  inherit (lib.types) listOf submodule raw;
+  inherit (self.lib.aspects) collect identity extract;
+in
+{
   flake.aspects.autocompat =
     { class, aspect-chain }:
     let
 
-      aspects = self.lib.collect (builtins.head aspect-chain);
+      aspects = collect (builtins.head aspect-chain);
 
-      identities = map self.lib.identity aspects;
+      identities = builtins.filter (id: id != { }) (map identity aspects);
 
-      extract-compat = self.lib.extract {
+      extract-compat = extract {
         class = "compat";
-        options.provides = lib.mkOption {
-          type = lib.types.listOf (
-            lib.types.submodule {
-              options = {
-                target = lib.mkOption {
-                  type = lib.types.raw;
-                };
-                aspect = lib.mkOption {
-                  type = lib.types.raw;
-                };
+        options.provides = mkOption {
+          type = listOf (submodule {
+            options = {
+              target = mkOption {
+                type = raw;
               };
-            }
-          );
+              aspect = mkOption {
+                type = raw;
+              };
+            };
+          });
           default = [ ];
         };
       };
 
-      compats = lib.concatMap (compat: compat.provides) (map extract-compat aspects);
+      compats = lib.concatMap (compat: compat.provides or [ ]) (map extract-compat aspects);
 
-      needed = builtins.filter (compat: builtins.elem compat.target.identity identities) compats;
+      needed = (builtins.filter (compat: builtins.elem (identity compat.target) identities) compats);
 
     in
     {

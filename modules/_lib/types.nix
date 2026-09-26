@@ -44,8 +44,7 @@ let
 
 in
 {
-
-  flake.lib.types = {
+  types = {
     inherit hostSubmodule hostsType;
   };
 }
