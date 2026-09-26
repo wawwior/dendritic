@@ -1,13 +1,19 @@
 { lib, ... }:
 let
 
+  defaults = {
+    class = null;
+    aspect-chain = [ { } ];
+  };
+
   bind =
     aspect:
-    if builtins.isFunction aspect || (aspect ? __functor && aspect ? __functionArgs) then
-      aspect {
-        class = null;
-        aspect-chain = [ ];
-      }
+    if (aspect ? __functor && aspect ? __functionArgs) then
+      aspect (
+        builtins.mapAttrs (name: _: defaults.${name}) (
+          lib.filterAttrs (_: optional: !optional) aspect.__functionArgs
+        )
+      )
     else
       aspect;
 
