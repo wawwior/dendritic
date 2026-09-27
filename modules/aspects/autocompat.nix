@@ -30,12 +30,19 @@ in
         };
       };
 
-      compats = lib.concatMap (compat: compat.provides or [ ]) (map extract-compat aspects);
-
-      needed = (builtins.filter (compat: builtins.elem (identity compat.target) identities) compats);
-
+      extract-compats =
+        identities: aspect:
+        let
+          compats = (extract-compat aspect).provides or [ ];
+          needed = builtins.filter (compat: builtins.elem (identity compat.target) identities) compats;
+          identities' = builtins.filter (id: id != { }) (map (needed: identity needed.aspect) needed);
+        in
+        lib.flatten (
+          (map (needed: needed.aspect) needed)
+          ++ map (needed: extract-compats (identities ++ identities') needed.aspect) needed
+        );
     in
     {
-      includes = map (needed: needed.aspect) needed;
+      includes = lib.flatten (map (extract-compats identities) aspects);
     };
 }
