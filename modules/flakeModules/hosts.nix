@@ -6,10 +6,16 @@
 let
 
   inherit (lib) mkOption;
+  inherit (lib.types) listOf raw;
 
   inherit (self.aspects) forward-include;
 
-  inherit (self.lib.aspects) forward resolve;
+  inherit (self.lib.aspects)
+    collect
+    extract
+    forward
+    resolve
+    ;
   inherit (self.lib.types) hostsType;
 in
 {
@@ -25,13 +31,35 @@ in
 
     config.flake.nixosConfigurations = builtins.mapAttrs (
       name: host:
+      let
+        aspects = collect { includes = host.aspects; };
+        users = collect { includes = host.users; };
+        extract-cross-tree = extract {
+          class = "cross-tree";
+          options = {
+            to-aspects = mkOption {
+              type = listOf raw;
+              default = [ ];
+            };
+            to-users = mkOption {
+              type = listOf raw;
+              default = [ ];
+            };
+          };
+        };
+        to-users = lib.flatten (map (aspect: (extract-cross-tree aspect).to-users or [ ]) aspects);
+        to-aspects = lib.flatten (map (aspect: (extract-cross-tree aspect).to-aspects or [ ]) users);
+      in
       lib.nixosSystem {
         modules = [
           (resolve "nixos" [ ] {
             inherit name;
-            includes = host.aspects ++ [
-              (forward-include "__aspects")
-            ];
+            includes =
+              host.aspects
+              ++ [
+                (forward-include "__aspects")
+              ]
+              ++ to-aspects;
           })
         ]
         ++ (map (
@@ -53,7 +81,7 @@ in
                 fromAspect = _: user;
               })
             ]
-            ++ [ ];
+            ++ to-users;
           }
         ) host.users);
       }
